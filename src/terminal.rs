@@ -9,6 +9,7 @@ pub struct TerminalSize {
     pub col: u16,
 }
 
+#[derive(Debug, Default)]
 pub struct CursorPos {
     pub row: u16,
     pub col: u16,
@@ -64,7 +65,7 @@ impl Terminal {
 
     /// # Errors
     pub fn move_cursor(pos: &CursorPos) -> io::Result<()> {
-        io::stdout().queue(cursor::MoveTo(pos.row, pos.col))?;
+        io::stdout().queue(cursor::MoveTo(pos.col, pos.row))?;
         Ok(())
     }
 
