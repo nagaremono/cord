@@ -6,7 +6,7 @@ use crate::{
 };
 
 const VERSION: &str = "0.1.0";
-const GREET: &str = "~ Hello, World!\r\n";
+const GREET: &str = "~ Hello, World!";
 
 #[derive(Debug)]
 pub struct View {
@@ -21,7 +21,7 @@ impl Default for View {
         buf.push(String::from(GREET));
 
         for _ in 1..row - 1 {
-            buf.push(String::from("~\r\n"));
+            buf.push(String::from("~"));
         }
 
         Self { buf }
@@ -52,6 +52,7 @@ impl Renderer for View {
         for line in self.buf.iter() {
             Terminal::clear_line()?;
             Terminal::print(line)?;
+            Terminal::print("\r\n")?;
         }
 
         Ok(())
