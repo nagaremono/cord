@@ -5,14 +5,16 @@ use crossterm::{
 use std::{cmp::min, io};
 use u16;
 
-use crate::terminal::{CursorPos, Terminal, TerminalSize};
-
-const VERSION: &str = "0.1.0";
+use crate::{
+    terminal::{CursorPos, Terminal, TerminalSize},
+    view::{Renderer, View},
+};
 
 #[derive(Debug, Default)]
-pub struct Editor {
+pub struct Editor<T: Renderer = View> {
     should_quit: bool,
     position: Location,
+    view: T,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -63,7 +65,7 @@ impl Editor {
             Terminal::clear(ClearType::CurrentLine)?;
             Terminal::print("Goodbye...\r\n")?;
         } else {
-            Self::draw_rows()?;
+            self.view.render()?;
             self.move_cursor(&self.position.clone()).unwrap();
         }
 
@@ -110,38 +112,6 @@ impl Editor {
         }
 
         self.sync_cursor()?;
-
-        Ok(())
-    }
-
-    fn draw_rows() -> Result<(), io::Error> {
-        let TerminalSize { col, row } = Terminal::size()?;
-        Terminal::begin()?;
-
-        for r in 0..row {
-            Terminal::clear_line()?;
-            Terminal::print("~")?;
-
-            if r == row / 4 {
-                Editor::greet()?;
-            }
-
-            if r < col - 1 {
-                Terminal::print("\r\n")?;
-            }
-        }
-
-        Ok(())
-    }
-
-    fn greet() -> Result<(), io::Error> {
-        let TerminalSize { col, .. } = Terminal::size()?;
-        let message = format!("hello from cord version: {VERSION}");
-
-        let mid = (col / 2) as usize;
-        let start = mid - message.len() / 2;
-        let left_pad = " ".repeat(start);
-        Terminal::print(&format!("{left_pad}{message}"))?;
 
         Ok(())
     }
