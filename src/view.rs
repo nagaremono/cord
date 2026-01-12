@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, path::PathBuf};
 
 use crate::{
     buffer::Buffer,
@@ -28,11 +28,6 @@ impl Default for View {
     }
 }
 
-pub trait Renderer {
-    /// # Errors
-    fn render(&self) -> Result<(), io::Error>;
-}
-
 impl View {
     fn greet(&self) -> Result<(), io::Error> {
         let TerminalSize { col, .. } = Terminal::size()?;
@@ -45,10 +40,22 @@ impl View {
 
         Ok(())
     }
-}
 
-impl Renderer for View {
-    fn render(&self) -> Result<(), io::Error> {
+    /// # Errors
+    pub fn load(&mut self, path: &PathBuf) -> Result<(), io::Error> {
+        let res = std::fs::read_to_string(path);
+        if let Ok(content) = res {
+            for (index, content) in content.lines().enumerate() {
+                self.buf.set_line_content(index, content.to_owned());
+            }
+            self.buf.drain(content.lines().count()..);
+        }
+
+        Ok(())
+    }
+
+    /// # Errors
+    pub fn render(&self) -> Result<(), io::Error> {
         for line in self.buf.iter() {
             Terminal::clear_line()?;
             Terminal::print(line)?;

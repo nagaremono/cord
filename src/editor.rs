@@ -2,19 +2,19 @@ use crossterm::{
     event::{Event, KeyCode, KeyEvent, KeyModifiers, read},
     terminal::ClearType,
 };
-use std::{cmp::min, io};
+use std::{cmp::min, io, path::PathBuf};
 use u16;
 
 use crate::{
     terminal::{CursorPos, Terminal, TerminalSize},
-    view::{Renderer, View},
+    view::View,
 };
 
 #[derive(Debug, Default)]
-pub struct Editor<T: Renderer = View> {
+pub struct Editor {
     should_quit: bool,
     position: Location,
-    view: T,
+    view: View,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -35,8 +35,11 @@ impl Location {
 
 impl Editor {
     /// # Panics
-    pub fn run(&mut self) {
+    pub fn run(&mut self, filename: Option<&PathBuf>) {
         Terminal::init().unwrap();
+        if let Some(filename) = filename {
+            self.view.load(filename).unwrap();
+        }
         let result = self.repl();
         Terminal::close().unwrap();
         result.unwrap();
